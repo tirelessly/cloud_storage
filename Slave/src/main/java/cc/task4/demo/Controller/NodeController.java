@@ -3,6 +3,7 @@ package cc.task4.demo.Controller;
 import cc.task4.demo.Exceptions.BucketDirectoryNotFound;
 import cc.task4.demo.Exceptions.DataDirectoryNotFound;
 import cc.task4.demo.Exceptions.GenericException;
+import cc.task4.demo.Exceptions.ImageNotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Map;
 
 public class NodeController {
@@ -106,6 +109,43 @@ public class NodeController {
             return new ResponseEntity<>("File " + imageInBytes +  " not found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>("File " + imageInBytes +  " not found", HttpStatus.NOT_FOUND);
+    }
+
+    private String decodeImage(File file) {
+        String result = null;
+        try {
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+            result = new String(fileContent, "ISO_8859_1");
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    public ResponseEntity<Map<String,String>> searchFile(String imageInBytes) {
+        Integer hashIndex = getHashIndex(imageInBytes);
+        String bucketFullPath = getCurrentPath(BUCKET_RELATIVE_PATH + hashIndex);
+        try {
+            checkIfDirectoryExists(bucketFullPath, "");
+            File folder = new File(bucketFullPath);
+            File[] listOfFiles = folder.listFiles();
+
+            for (File file : listOfFiles) {
+                if (file.isFile()) {
+                    if (imageInBytes.equals(file.getName())) {
+                        Map<String, String> response = new HashMap<>();
+                        response.put(file.getName(), decodeImage(file));
+                        return new ResponseEntity<>(response, HttpStatus.OK);
+                    }
+                }
+            }
+            throw new ImageNotFound("ImageNotFoundException", "Image " + imageInBytes + "not found");
+        } catch (GenericException e) {
+            log.warn("File {} not found", imageInBytes);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     private void saveToSlot(String imageInBytes, String path, String imageName) {

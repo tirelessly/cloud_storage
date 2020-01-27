@@ -56,6 +56,13 @@ public class RestController {
         return controller.deleteFile(fileToDelete);
     }
 
+    @RequestMapping(value = "/api/v1/search", method = RequestMethod.POST)
+    public @ResponseBody
+    ResponseEntity<Map<String,String>> search(@RequestBody String fileToFind) {
+        log.info("Incoming delete request // name: {}", fileToFind);
+        return controller.searchFile(fileToFind);
+    }
+
 
     @ExceptionHandler({ GenericException.class })
     public @ResponseBody ResponseEntity<?> handleException(GenericException ex, HttpServletResponse response) {
