@@ -7,11 +7,11 @@ package cc.task4.demo.Exceptions;
  * For simplicity reasons your own exceptions could, e.g., inherit from the one given below
  */
 
-public class GenericExampleException extends RuntimeException{
+public class GenericException extends RuntimeException{
 
 	private final String errorName;
-	
-	public GenericExampleException(String errorName, String errorMessage) {
+
+	public GenericException(String errorName, String errorMessage) {
 		super(errorMessage);
 		this.errorName = errorName;
 	}

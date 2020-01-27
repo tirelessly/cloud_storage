@@ -1,9 +1,9 @@
 package cc.task4.demo.Exceptions;
 
-public class ImagesDirectoryNotFound extends GenericExampleException {
+public class DataDirectoryNotFound extends GenericException {
 
 
-    public ImagesDirectoryNotFound(String errorName, String errorMessage) {
+    public DataDirectoryNotFound(String errorName, String errorMessage) {
         super(errorName, errorMessage);
     }
 }

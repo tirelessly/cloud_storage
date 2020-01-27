@@ -1,6 +1,6 @@
 package cc.task4.demo.Exceptions;
 
-public class BucketDirectoryNotFound extends GenericExampleException {
+public class BucketDirectoryNotFound extends GenericException {
 
 
     public BucketDirectoryNotFound(String errorName, String errorMessage) {
