@@ -1,0 +1,45 @@
+version: "3"
+services:
+
+  master:
+    container_name: master
+    image: dockersamples/master:latest
+    ports:
+      - "5000:8080"
+    networks:
+      - cloud_storage
+
+  node1:
+    container_name: node1
+    image: van15h/node:latest
+    volumes:
+      - "/data/node1:/data"
+    networks:
+      - cloud_storage
+
+  node2:
+    container_name: node2
+    image: van15h/node:latest
+    volumes:
+      - "/data/node2:/data"
+    networks:
+      - cloud_storage
+
+  node3:
+    container_name: node3
+    image: van15h/node:latest
+    volumes:
+      - "/data/node3:/data"
+    networks:
+      - cloud_storage
+
+  node4:
+    container_name: node4
+    image: van15h/node:latest
+    volumes:
+      - "/data/node4:/data"
+    networks:
+      - cloud_storage
+
+networks:
+  cloud_storage:
