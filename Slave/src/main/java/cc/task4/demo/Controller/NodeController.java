@@ -2,13 +2,15 @@ package cc.task4.demo.Controller;
 
 import cc.task4.demo.Exceptions.BucketDirectoryNotFound;
 import cc.task4.demo.Exceptions.DataDirectoryNotFound;
+import cc.task4.demo.Exceptions.GenericException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.Map;
 
 public class NodeController {
@@ -38,7 +40,7 @@ public class NodeController {
     private void checkIfDirectoryExists(String fullPath, String directoryName) {
         File directory = new File(fullPath);
         if (! directory.exists()) {
-            if ("images".equals(directoryName)) {
+            if ("data".equals(directoryName)) {
                 log.warn("Images file not found");
                 throw new DataDirectoryNotFound("ImagesDirectoryNotFound", "Images file not found");
             } else {
@@ -50,6 +52,7 @@ public class NodeController {
 
     private void createDirectory (String fullPath) {
         File directory = new File(fullPath);
+        log.info("About to create directory" + fullPath);
         directory.mkdir();
         log.info("{} directory was created.", fullPath);
     }
@@ -59,7 +62,7 @@ public class NodeController {
     }
 
 
-    private void saveFile(Map<String, String> file) {
+    public ResponseEntity<String> saveFile(Map<String, String> file) {
         String slotName = null;
         String imageInBytes = null;
         try {
@@ -76,16 +79,44 @@ public class NodeController {
         } finally {
             saveToSlot(imageInBytes, getCurrentPath(slotName), getFileName(file));
         }
+        return new ResponseEntity<>("Image successfully added.", HttpStatus.OK);
+    }
+
+
+    public ResponseEntity<String> deleteFile(String imageInBytes) {
+        Integer hashIndex = getHashIndex(imageInBytes);
+        String bucketFullPath = getCurrentPath(BUCKET_RELATIVE_PATH + hashIndex);
+        try {
+            checkIfDirectoryExists(bucketFullPath, "");
+
+            File folder = new File(bucketFullPath);
+            File[] listOfFiles = folder.listFiles();
+
+            for (File file : listOfFiles) {
+                if (file.isFile()) {
+                    if (imageInBytes.equals(file.getName())) {
+                        file.delete();
+                        return new ResponseEntity<String>("File " + imageInBytes +  " successfully deleted", HttpStatus.OK);
+                    }
+                }
+                System.out.println(file.getName());
+            }
+        } catch (GenericException e) {
+            log.warn("File not found");
+            return new ResponseEntity<>("File " + imageInBytes +  " not found", HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>("File " + imageInBytes +  " not found", HttpStatus.NOT_FOUND);
     }
 
     private void saveToSlot(String imageInBytes, String path, String imageName) {
-        String fullPath = path + "/" + imageName + ".txt";
+        String fullPath = path + "/" + imageName;
         File file = new File(fullPath);
+
         try{
-            FileWriter fw = new FileWriter(file.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(imageInBytes);
-            bw.close();
+            byte[] newStr = imageInBytes.getBytes("ISO_8859_1");
+            ByteArrayInputStream bis = new ByteArrayInputStream(newStr);
+            BufferedImage bImage2 = ImageIO.read(bis);
+            ImageIO.write(bImage2, "jpg", file );
         }
         catch (IOException e){
             e.printStackTrace();
@@ -93,6 +124,7 @@ public class NodeController {
     }
 
     private Integer getHashIndex(String imageInBytes) {
+        log.info("image length {}", imageInBytes.length());
         return imageInBytes.length() % BUCKET_SIZE;
     }
 
