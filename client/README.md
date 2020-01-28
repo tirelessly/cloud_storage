@@ -10,12 +10,12 @@ Requirements:
 
 + docker-compose
 
-+ python 3
++ python3
 
 How to run:
 
-+ docker-compose up
++ run: `docker-compose up`
 
-+ docker ps
++ wait for services go online
 
 + run : `./test_client`
