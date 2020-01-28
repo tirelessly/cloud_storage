@@ -58,14 +58,14 @@ public class RestController {
     public @ResponseBody
     ResponseEntity<String> delete(@PathVariable("fileToDelete") String fileToDelete) {
         log.info("Incoming delete request // name: {}", fileToDelete);
-        return controller.deleteFile(fileToDelete);
+        return controller.makeOperation(fileToDelete, NodeController.Operation.DELETE);
     }
 
     @RequestMapping(value = "/api/v1/search/{fileToFind}", method = RequestMethod.GET)
     public @ResponseBody
     ResponseEntity<String> search(@PathVariable("fileToFind") String fileToFind) {
         log.info("Incoming search request // name: {}", fileToFind);
-        return controller.searchFile(fileToFind);
+        return controller.makeOperation(fileToFind, NodeController.Operation.SEARCH);
     }
 
 

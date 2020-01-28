@@ -3,7 +3,6 @@ package cc.task4.demo.Controller;
 import cc.task4.demo.Exceptions.BucketDirectoryNotFound;
 import cc.task4.demo.Exceptions.DataDirectoryNotFound;
 import cc.task4.demo.Exceptions.GenericException;
-import cc.task4.demo.Exceptions.ImageNotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,11 +13,15 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class NodeController {
+
+    public enum Operation {
+        DELETE,
+        SEARCH
+    }
 
     private Logger log;
     private static final int BUCKET_SIZE = 6;
@@ -58,7 +61,6 @@ public class NodeController {
     private void createDirectory (String fullPath) {
         File directory = new File(fullPath);
         directory.mkdir();
-        log.info("{} directory was created.", fullPath);
     }
 
     private String getCurrentPath(String directoryName) {
@@ -88,25 +90,29 @@ public class NodeController {
     }
 
 
-    public ResponseEntity<String> deleteFile(String imageInBytes) {
+    public ResponseEntity<String> makeOperation(String imageInBytes, Operation operation) {
         Integer hashIndex = getHashIndex(imageInBytes);
         String bucketFullPath = getCurrentPath(BUCKET_RELATIVE_PATH + hashIndex);
-        log.info("log path {}", bucketFullPath);
         try {
             checkIfDirectoryExists(bucketFullPath, imageInBytes);
             File folder = new File(bucketFullPath);
             File[] listOfFiles = folder.listFiles();
-
             for (File file : listOfFiles) {
                 if (file.isFile()) {
                     if (imageInBytes.equals(file.getName())) {
-                        file.delete();
-                        return new ResponseEntity<>("File " + imageInBytes +  " successfully deleted", HttpStatus.OK);
+                        if (operation.equals(Operation.DELETE)) {
+                            file.delete();
+                            log.info("File {} successfully deleted", imageInBytes);
+                            return new ResponseEntity<>("File " + imageInBytes +  " successfully deleted", HttpStatus.OK);
+                        } else if (operation.equals(Operation.SEARCH)) {
+                            log.info("File {} found", imageInBytes);
+                            return new ResponseEntity<>(decodeImage(file), HttpStatus.OK);
+                        }
                     }
                 }
             }
         } catch (GenericException e) {
-            log.warn("File not found");
+            log.warn("File {} not found", imageInBytes);
             return new ResponseEntity<>("File " + imageInBytes +  " not found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>("File " + imageInBytes +  " not found", HttpStatus.NOT_FOUND);
@@ -148,29 +154,6 @@ public class NodeController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    public ResponseEntity<String> searchFile(String imageInBytes) {
-        Integer hashIndex = getHashIndex(imageInBytes);
-        log.info("Hashindex: {} for fileName {}", hashIndex, imageInBytes);
-        String bucketFullPath = getCurrentPath(BUCKET_RELATIVE_PATH + hashIndex);
-        try {
-            checkIfDirectoryExists(bucketFullPath, "");
-            File folder = new File(bucketFullPath);
-            File[] listOfFiles = folder.listFiles();
-
-            for (File file : listOfFiles) {
-                if (file.isFile()) {
-                    if (imageInBytes.equals(file.getName())) {
-                        return new ResponseEntity<>(decodeImage(file), HttpStatus.OK);
-                    }
-                }
-            }
-            //throw new ImageNotFound("ImageNotFoundException", "Image " + imageInBytes + "not found");
-        } catch (GenericException e) {
-            log.warn("File {} not found", imageInBytes);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
 
     private void saveToSlot(String imageInBytes, String path, String imageName) {
         String fullPath = path + "/" + imageName;
@@ -188,7 +171,6 @@ public class NodeController {
     }
 
     private Integer getHashIndex(String imageInBytes) {
-        log.info("image length {}", imageInBytes.length());
         return imageInBytes.length() % BUCKET_SIZE;
     }
 
