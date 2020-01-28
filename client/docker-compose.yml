@@ -12,6 +12,8 @@ services:
   node1:
     container_name: node1
     image: van15h/node:latest
+    ports:
+      - "5001:8080"
     volumes:
       - "/data/node1:/data"
     networks:
@@ -20,6 +22,8 @@ services:
   node2:
     container_name: node2
     image: van15h/node:latest
+    ports:
+      - "5002:8080"
     volumes:
       - "/data/node2:/data"
     networks:
@@ -28,6 +32,8 @@ services:
   node3:
     container_name: node3
     image: van15h/node:latest
+    ports:
+      - "5003:8080"
     volumes:
       - "/data/node3:/data"
     networks:
@@ -36,6 +42,8 @@ services:
   node4:
     container_name: node4
     image: van15h/node:latest
+    ports:
+      - "5004:8080"
     volumes:
       - "/data/node4:/data"
     networks:
