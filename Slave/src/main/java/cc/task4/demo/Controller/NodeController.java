@@ -13,7 +13,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NodeController {
@@ -55,7 +57,6 @@ public class NodeController {
 
     private void createDirectory (String fullPath) {
         File directory = new File(fullPath);
-        log.info("About to create directory" + fullPath);
         directory.mkdir();
         log.info("{} directory was created.", fullPath);
     }
@@ -68,9 +69,10 @@ public class NodeController {
     public ResponseEntity<String> saveFile(Map<String, String> file) {
         String slotName = null;
         String imageInBytes = null;
+        String fileName = getFileName(file);
         try {
             imageInBytes = getImageAsString(file);
-            Integer hashIndex = getHashIndex(imageInBytes);
+            Integer hashIndex = getHashIndex(fileName);
             slotName = BUCKET_RELATIVE_PATH + hashIndex;
             checkIfDirectoryExists(getCurrentPath(DATA_RELATIVE_PATH), DATA_RELATIVE_PATH);
             checkIfDirectoryExists(getCurrentPath(slotName), slotName);
@@ -82,16 +84,16 @@ public class NodeController {
         } finally {
             saveToSlot(imageInBytes, getCurrentPath(slotName), getFileName(file));
         }
-        return new ResponseEntity<>("Image successfully added.", HttpStatus.OK);
+        return new ResponseEntity<>("Image " + fileName + " successfully added.", HttpStatus.OK);
     }
 
 
     public ResponseEntity<String> deleteFile(String imageInBytes) {
         Integer hashIndex = getHashIndex(imageInBytes);
         String bucketFullPath = getCurrentPath(BUCKET_RELATIVE_PATH + hashIndex);
+        log.info("log path {}", bucketFullPath);
         try {
-            checkIfDirectoryExists(bucketFullPath, "");
-
+            checkIfDirectoryExists(bucketFullPath, imageInBytes);
             File folder = new File(bucketFullPath);
             File[] listOfFiles = folder.listFiles();
 
@@ -99,10 +101,9 @@ public class NodeController {
                 if (file.isFile()) {
                     if (imageInBytes.equals(file.getName())) {
                         file.delete();
-                        return new ResponseEntity<String>("File " + imageInBytes +  " successfully deleted", HttpStatus.OK);
+                        return new ResponseEntity<>("File " + imageInBytes +  " successfully deleted", HttpStatus.OK);
                     }
                 }
-                System.out.println(file.getName());
             }
         } catch (GenericException e) {
             log.warn("File not found");
@@ -123,9 +124,33 @@ public class NodeController {
         return result;
     }
 
+    public ResponseEntity<List<String>> searchInRange() {
+        List<String> result = new ArrayList<>();
+        try {
+            String currentPath = getCurrentPath(DATA_RELATIVE_PATH);
+            checkIfDirectoryExists(getCurrentPath(DATA_RELATIVE_PATH), DATA_RELATIVE_PATH);
+            File folder = new File(currentPath);
+            File[] listOfFiles = folder.listFiles();
+            for (File file : listOfFiles) {
+                if (file.getName().contains("bucket")) {
+                    String bucketPath = currentPath + "/" + file.getName();
+                    File bucketFile = new File(bucketPath);
+                    File[] listOfBuckets = bucketFile.listFiles();
+                    for (File eachImage: listOfBuckets) {
+                        result.add(eachImage.getName());
+                    }
+                }
+            }
+
+            } catch (GenericException e) {
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
     public ResponseEntity<String> searchFile(String imageInBytes) {
         Integer hashIndex = getHashIndex(imageInBytes);
+        log.info("Hashindex: {} for fileName {}", hashIndex, imageInBytes);
         String bucketFullPath = getCurrentPath(BUCKET_RELATIVE_PATH + hashIndex);
         try {
             checkIfDirectoryExists(bucketFullPath, "");
@@ -139,11 +164,12 @@ public class NodeController {
                     }
                 }
             }
-            throw new ImageNotFound("ImageNotFoundException", "Image " + imageInBytes + "not found");
+            //throw new ImageNotFound("ImageNotFoundException", "Image " + imageInBytes + "not found");
         } catch (GenericException e) {
             log.warn("File {} not found", imageInBytes);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     private void saveToSlot(String imageInBytes, String path, String imageName) {

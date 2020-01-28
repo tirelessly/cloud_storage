@@ -34,16 +34,16 @@ public class RestController {
         controller = new NodeController();
     }
 
-    @RequestMapping(value = "/status", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/v1/status", method = RequestMethod.GET)
     public ResponseEntity<String> healthcheck() {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/api/v1/range/{from}/{to}", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/v1/range", method = RequestMethod.GET)
     public @ResponseBody
-    ResponseEntity<String> range(@PathVariable("from") String from,
-                                 @PathVariable("to") String to) {
-        return new ResponseEntity<>("ggggg", HttpStatus.OK);
+    ResponseEntity<List<String>> range() {
+        log.info("Incoming range request.");
+        return controller.searchInRange();
     }
 
     @RequestMapping(value = "/api/v1/insert", method = RequestMethod.POST)
@@ -64,7 +64,7 @@ public class RestController {
     @RequestMapping(value = "/api/v1/search/{fileToFind}", method = RequestMethod.GET)
     public @ResponseBody
     ResponseEntity<String> search(@PathVariable("fileToFind") String fileToFind) {
-        log.info("Incoming delete request // name: {}", fileToFind);
+        log.info("Incoming search request // name: {}", fileToFind);
         return controller.searchFile(fileToFind);
     }
 
