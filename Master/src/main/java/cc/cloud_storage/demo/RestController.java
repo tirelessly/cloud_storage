@@ -45,6 +45,20 @@ public class RestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/api/v1/search/{key}", method = RequestMethod.GET)
+    public @ResponseBody ResponseEntity<byte[]> search(@PathVariable String key) throws Exception {
+        log.info("Received key to search for: {}", key);
+        try {
+            Map<String, byte[]> response = masterNode.sendSearchRequestToNode(key);
+            Map.Entry<String, byte[]> map = response.entrySet().iterator().next();
+            HttpHeaders headers =new HttpHeaders();
+            headers.set("url", map.getKey());
+            return new ResponseEntity<>(map.getValue(), headers, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @RequestMapping(value = "/api/v1/status", method = RequestMethod.GET)
     public @ResponseBody ResponseEntity<String> getStatus() {

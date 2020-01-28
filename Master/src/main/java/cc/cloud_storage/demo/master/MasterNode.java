@@ -60,6 +60,28 @@ public class MasterNode {
         return responseFromNode;
     }
 
+    public Map<String, byte[]> sendSearchRequestToNode(String key) throws Exception {
+        String nodeUrl = getBucketURLByHashIndex(new String(key.getBytes()));
+        try {
+            log.info("About to search for a value for key: {}", key);
+            String responseFromNode = new RestTemplate().getForObject(nodeUrl + "api/v1/search/" + key, String.class);
+
+            Map<String, byte[]> response = new HashMap<>();
+
+            response.put(nodeUrl, responseFromNode.getBytes(ENCODING));
+            log.info("Received response for search for key {} from node {}", responseFromNode, nodeUrl);
+
+
+            return response;
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException(e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IOException(e);
+        }
+    }
+
     private String getBucketURLByHashIndex(String fileName) {
         Integer hashIndex = fileName.length() % serviceNumber;
         log.info("Hash index is {}", hashIndex);
