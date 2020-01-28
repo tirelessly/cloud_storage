@@ -4,18 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import sun.jvm.hotspot.runtime.Bytes;
-import sun.misc.BASE64Encoder;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class MasterNode {
 
@@ -108,10 +100,10 @@ public class MasterNode {
     }
 
     private void addEndpoints() {
-        this.endpoints.put(0, "http://" + IP + ":8080/");
-        this.endpoints.put(1, "http://" + IP + ":8080/");
-        this.endpoints.put(2, "http://" + IP + ":8080/");
-        this.endpoints.put(3, "http://" + IP + ":8080/");
+        this.endpoints.put(0, "http://" + System.getenv("NODE1") + ":8080/");
+        this.endpoints.put(1, "http://" + System.getenv("NODE2") + ":8080/");
+        this.endpoints.put(2, "http://" + System.getenv("NODE3") + ":8080/");
+        this.endpoints.put(3, "http://" + System.getenv("NODE4") + ":8080/");
 
     }
 
