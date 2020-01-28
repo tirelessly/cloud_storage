@@ -16,4 +16,6 @@ How to run:
 
 + docker-compose up
 
++ docker ps
+
 + run : `./test_client`
