@@ -82,6 +82,25 @@ public class MasterNode {
         }
     }
 
+    public List<String> sendRangeRequestToNode(String key1, String key2) {
+        Iterator<Map.Entry<Integer, String>> itr = endpoints.entrySet().iterator();
+        List<String> response = new LinkedList<>();
+        while(itr.hasNext()) {
+            Map.Entry<Integer, String> entry = itr.next();
+            String nodeUrl = entry.getValue();
+            List<String> responseFromNode = new RestTemplate().getForObject(nodeUrl + "/api/v1/range", List.class);
+            if(responseFromNode != null) {
+                response.addAll(responseFromNode);
+            }
+        }
+        List<String> sortedList = response.stream()
+            .filter(a -> a.compareTo(key1) >= 0)
+            .filter(a -> a.compareTo(key2) <= 0)
+            .collect(Collectors.toList());
+
+        return sortedList;
+    }
+
     private String getBucketURLByHashIndex(String fileName) {
         Integer hashIndex = fileName.length() % serviceNumber;
         log.info("Hash index is {}", hashIndex);

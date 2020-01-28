@@ -14,9 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLOutput;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @org.springframework.web.bind.annotation.RestController
 public class RestController {
@@ -58,6 +57,17 @@ public class RestController {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @RequestMapping(value = "/api/v1/range/{key1}/{key2}", method = RequestMethod.GET)
+    public @ResponseBody ResponseEntity<List<String>> getRange(@PathVariable String key1, @PathVariable String key2) throws Exception {
+        log.info("Received key to search from: {}", key1);
+        log.info("Received key to search up to: {}", key2);
+
+        List<String> response = masterNode.sendRangeRequestToNode(key1, key2);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
     @RequestMapping(value = "/api/v1/status", method = RequestMethod.GET)
