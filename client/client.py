@@ -1,11 +1,11 @@
 import requests
-import json
-import pathlib
-from datetime import datetime
+# import json
+# import pathlib
+# from datetime import datetime
 import logging
 import os
-import subprocess
-from time import sleep
+# import subprocess
+# from time import sleep
 import random
 
 """
@@ -18,6 +18,8 @@ master_url = 'http://77.80.1.219:8080/'
 min_node_count = 3
 min_delete_count = 3
 files = os.listdir('dogs')
+range_from = '1111.jpg'
+range_to = '8044.jpg'
 
 
 def main():
@@ -29,6 +31,7 @@ def main():
     logging.info('Start test script')
 
     # deploy_app()
+    check_health()
     insert_data()
     # read_data()
     # delete_data()
@@ -45,20 +48,32 @@ def deploy_app():
     logging.info('start deploying app')
     # subprocess.run(['sudo', 'docker-compose', 'up'])
     # output=subprocess.check_output("docker ps | wc -l", shell=True)
-    sleep(5)
+    # sleep(5)
     print('wait')
-    sleep(5)
+    # sleep(5)
     print('wait')
-    sleep(5)
+    # sleep(5)
     # check_health()
 
 
 def check_health():
+    print('start deploying app')
+    logging.info('start deploying app')
     urls = [master_url,
             'http://node1:5001/',
             'http://node2:5002/',
             'http://node3:5003/',
-            'http://node4:5004/',]
+            'http://node4:5004/', ]
+    for url in urls:
+        while True:
+            res = requests.get(url+'/api/v1/status')
+            if res.status_code == 200:
+                print('Online: ' + url)
+                logging.info('Online: ' + url)
+                break
+        # only one time
+        break
+
     print('storage app deployed')
     logging.info('storage app deployed')
 
@@ -70,6 +85,7 @@ def insert_data():
         logging.debug('insert data: ' + f)
         payload = {'file': open('dogs/'+f, 'rb')}
         requests.post(master_url+'api/v1/insert', files=payload)
+        # send only one file
         break
     print('stop inserting data')
     logging.info('stop inserting data')
@@ -88,9 +104,11 @@ def read_data():
         filename = temp_files[index]
         temp_files.remove(filename)
         logging.debug('request file: ' + filename)
+        # TODO
         res = requests.get(master_url+'api/v1/search/' + filename)
         # get node
         node = res.json()
+        # TODO
         logging.debug('response with' + filename + ' from node: ' + node)
         if node not in nodes:
             num_accessed_nodes += 1
@@ -104,15 +122,26 @@ def delete_data():
     print('start deleting data')
     logging.info('start deleting data')
     for i in (0, min_delete_count):
-        res = requests.delete(master_url+'api/v1/delete/' + files[i])
-        # if ok - continue, else repeat
+        requests.delete(master_url+'api/v1/delete/' + files[i])
+        print('deleting file:' + files[i])
+        logging.info('deleting file:' + files[i])
     print('stop deleting data')
     logging.info('stop deleting data')
 
 
 def range_query():
-    pass
+    print('start range search')
+    logging.info('start range search')
+    print('from: 1115.jpg')
+    logging.info('from: 1115.jpg')
+    print('to: 7468.jpg')
+    logging.info('to: 7468.jpg')
 
+    res = requests.get(master_url + 'api/v1/range/' + range_from + '/' + range_to)
+    print(res.json())
+
+    print('stop range search')
+    logging.info('stop range search')
 
 if __name__ == "__main__":
     main()
