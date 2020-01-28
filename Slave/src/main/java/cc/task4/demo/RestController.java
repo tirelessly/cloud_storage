@@ -39,7 +39,12 @@ public class RestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
+    @RequestMapping(value = "/api/v1/range/{from}/{to}", method = RequestMethod.POST)
+    public @ResponseBody
+    ResponseEntity<String> range(@PathVariable("from") String from,
+                                 @PathVariable("to") String to) {
+        return new ResponseEntity<>("ggggg", HttpStatus.OK);
+    }
 
     @RequestMapping(value = "/api/v1/insert", method = RequestMethod.POST)
     public @ResponseBody
@@ -49,16 +54,16 @@ public class RestController {
         return controller.saveFile(file);
     }
 
-    @RequestMapping(value = "/api/v1/delete", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/v1/delete/{fileToDelete}", method = RequestMethod.GET)
     public @ResponseBody
-    ResponseEntity<String> delete(@RequestBody String fileToDelete) {
+    ResponseEntity<String> delete(@PathVariable("fileToDelete") String fileToDelete) {
         log.info("Incoming delete request // name: {}", fileToDelete);
         return controller.deleteFile(fileToDelete);
     }
 
-    @RequestMapping(value = "/api/v1/search", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/v1/search/{fileToFind}", method = RequestMethod.GET)
     public @ResponseBody
-    ResponseEntity<Map<String,String>> search(@RequestBody String fileToFind) {
+    ResponseEntity<String> search(@PathVariable("fileToFind") String fileToFind) {
         log.info("Incoming delete request // name: {}", fileToFind);
         return controller.searchFile(fileToFind);
     }

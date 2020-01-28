@@ -124,7 +124,7 @@ public class NodeController {
     }
 
 
-    public ResponseEntity<Map<String,String>> searchFile(String imageInBytes) {
+    public ResponseEntity<String> searchFile(String imageInBytes) {
         Integer hashIndex = getHashIndex(imageInBytes);
         String bucketFullPath = getCurrentPath(BUCKET_RELATIVE_PATH + hashIndex);
         try {
@@ -135,9 +135,7 @@ public class NodeController {
             for (File file : listOfFiles) {
                 if (file.isFile()) {
                     if (imageInBytes.equals(file.getName())) {
-                        Map<String, String> response = new HashMap<>();
-                        response.put(file.getName(), decodeImage(file));
-                        return new ResponseEntity<>(response, HttpStatus.OK);
+                        return new ResponseEntity<>(decodeImage(file), HttpStatus.OK);
                     }
                 }
             }
