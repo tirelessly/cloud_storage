@@ -18,4 +18,4 @@ How to run:
 
 + wait for services go online
 
-+ run : `./test_client`
++ run : `python3 client.py`
