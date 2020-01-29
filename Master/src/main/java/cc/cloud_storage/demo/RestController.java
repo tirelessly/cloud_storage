@@ -40,8 +40,10 @@ public class RestController {
     ResponseEntity<String> delete(@PathVariable String key) {
         log.info("Received key to delete: {}", key);
         String response = masterNode.sendDeleteRequestToNode(key);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("url", response);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>("", headers, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/api/v1/search/{key}", method = RequestMethod.GET)
