@@ -102,9 +102,10 @@ def delete_data():
     print('start deleting data')
     logging.info('start deleting data')
     for i in range (0, min_delete_count):
-        requests.delete(master_url+'api/v1/delete/' + files[i])
-        print('    deleting file:' + files[i])
-        logging.info('deleting file:' + files[i])
+        res = requests.delete(master_url+'api/v1/delete/' + files[i])
+        node = res.headers.get('url')
+        print('    deleting file:' + files[i] + ' from: ' + node)
+        logging.info('deleting file:' + files[i] + ' from: ' + node)
     print('stop deleting data')
     logging.info('stop deleting data')
 
