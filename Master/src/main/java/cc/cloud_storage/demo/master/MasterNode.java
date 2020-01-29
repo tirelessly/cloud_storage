@@ -35,7 +35,7 @@ public class MasterNode {
 
             log.info("About to send image to node: {}", bucketUrl);
             responseFromNode = new RestTemplate().postForObject(bucketUrl + "api/v1/insert", dataToSend, String.class);
-            log.info("Received response for insert request {} from node: {}", responseFromNode, bucketUrl);
+            log.info("Received response for insert request from node: {}", bucketUrl);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -46,10 +46,10 @@ public class MasterNode {
     public String sendDeleteRequestToNode(String key){
         String nodeUrl = getBucketURLByHashIndex(new String(key.getBytes()));
         log.info("About to delete a value for key: {}", key);
-        String responseFromNode = new RestTemplate().getForObject(nodeUrl + "api/v1/delete/" + key, String.class);
-        log.info("Received response for delete request {} from node {}", responseFromNode, nodeUrl);
+        new RestTemplate().getForObject(nodeUrl + "api/v1/delete/" + key, String.class);
+        log.info("Received response for delete request from node {}", nodeUrl);
 
-        return responseFromNode;
+        return nodeUrl;
     }
 
     public Map<String, byte[]> sendSearchRequestToNode(String key) throws Exception {
@@ -61,7 +61,7 @@ public class MasterNode {
             Map<String, byte[]> response = new HashMap<>();
 
             response.put(nodeUrl, responseFromNode.getBytes(ENCODING));
-            log.info("Received response for search for key {} from node {}", responseFromNode, nodeUrl);
+            log.info("Received response for search for key {} from node {}", key, nodeUrl);
 
 
             return response;
